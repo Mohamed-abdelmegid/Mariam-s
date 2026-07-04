@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>قائمة الطلب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1A17;
+    --paper:#F4EFE2;
+    --paper-line:#DCD3BC;
+    --stamp:#C98A2C;
+    --stamp-dark:#9C6A1B;
+    --teal:#2F6F62;
+    --teal-dark:#204F45;
+    --muted:#8A8272;
+    --danger:#B04632;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(255,255,255,0.03), transparent 40%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 6px),
+      var(--ink);
+    color:var(--paper);
+    font-family:'Tajawal', sans-serif;
+    min-height:100vh;
+    padding-bottom:110px;
+  }
+  .mono{font-family:'JetBrains Mono', monospace;}
+
+  header{
+    padding:28px 20px 18px;
+    text-align:center;
+    border-bottom:2px dashed rgba(244,239,226,0.25);
+  }
+  header .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--stamp);
+    text-transform:uppercase;
+  }
+  header h1{
+    margin:6px 0 4px;
+    font-size:clamp(26px,5vw,38px);
+    font-weight:900;
+  }
+  header p{
+    margin:0;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .webhook-box{
+    max-width:520px;
+    margin:16px auto 0;
+    display:flex;
+    gap:8px;
+    background:rgba(244,239,226,0.06);
+    border:1px solid rgba(244,239,226,0.18);
+    border-radius:var(--radius);
+    padding:8px;
+  }
+  .webhook-box input{
+    flex:1;
+    background:transparent;
+    border:none;
+    color:var(--paper);
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    padding:6px 8px;
+    outline:none;
+    direction:ltr;
+    text-align:left;
+  }
+  .webhook-box span{
+    font-size:11px;
+    color:var(--muted);
+    align-self:center;
+    padding-right:6px;
+    white-space:nowrap;
+  }
+
+  nav.tabs{
+    display:flex;
+    justify-content:center;
+    gap:0;
+    margin:22px auto 0;
+    max-width:520px;
+    padding:0 20px;
+  }
+  nav.tabs button{
+    flex:1;
+    padding:12px 6px;
+    background:rgba(244,239,226,0.05);
+    color:var(--paper);
+    border:1px solid rgba(244,239,226,0.2);
+    font-family:'Tajawal', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    position:relative;
+  }
+  nav.tabs button:first-child{border-radius:8px 0 0 8px;}
+  nav.tabs button:last-child{border-radius:0 8px 8px 0;}
+  nav.tabs button + button{border-right:none;}
+  nav.tabs button.active{
+    background:var(--stamp);
+    border-color:var(--stamp);
+    color:var(--ink);
+  }
+  nav.tabs button .count{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    opacity:.75;
+    margin-top:2px;
+  }
+
+  main{
+    max-width:560px;
+    margin:24px auto 0;
+    padding:0 20px;
+  }
+
+  .ticket{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:var(--radius);
+    overflow:hidden;
+    box-shadow:0 18px 40px rgba(0,0,0,0.35);
+  }
+  .item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 16px;
+    border-bottom:1px dashed var(--paper-line);
+  }
+  .item:last-child{border-bottom:none;}
+  .item-main{flex:1;min-width:0;}
+  .item-name{
+    font-weight:700;
+    font-size:15px;
+    line-height:1.3;
+  }
+  .item-name.placeholder{color:#9c8f6d; font-style:italic;}
+  .item-price{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    color:var(--stamp-dark);
+    margin-top:2px;
+  }
+  .qty{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    flex-shrink:0;
+  }
+  .qty button{
+    width:30px;height:30px;
+    border-radius:50%;
+    border:1.5px solid var(--ink);
+    background:transparent;
+    color:var(--ink);
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .12s ease;
+  }
+  .qty button:active{transform:scale(0.9);}
+  .qty button.selected{
+    background:var(--teal);
+    border-color:var(--teal);
+    color:var(--paper);
+  }
+  .qty .other-input{
+    width:0;
+    opacity:0;
+    border:1.5px solid var(--teal);
+    border-radius:50%;
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:12px;
+    transition:width .18s ease, opacity .18s ease, border-radius .18s ease;
+    overflow:hidden;
+    padding:0;
+    height:30px;
+    color:var(--ink);
+  }
+  .qty .other-input.show{
+    width:44px;
+    opacity:1;
+    border-radius:8px;
+    padding:0 4px;
+  }
+
+  .cat-heading{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:26px 4px 8px;
+  }
+  .cat-heading:first-child{margin-top:0;}
+
+  .group-label{
+    font-size:12px;
+    font-weight:700;
+    color:var(--stamp);
+    margin:18px 4px 6px;
+  }
+  .group-label:first-of-type{margin-top:8px;}
+
+  .note{
+    max-width:560px;
+    margin:18px auto 0;
+    padding:0 20px;
+  }
+  .note p{
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.6;
+    border-right:3px solid var(--stamp);
+    padding-right:10px;
+  }
+
+  .order-bar{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    background:var(--paper);
+    color:var(--ink);
+    padding:14px 20px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    box-shadow:0 -10px 30px rgba(0,0,0,0.4);
+    z-index:20;
+  }
+  .order-bar .summary{
+    flex:1;
+    min-width:0;
+  }
+  .order-bar .summary .count-line{
+    font-size:11px;
+    color:var(--muted);
+    font-family:'JetBrains Mono', monospace;
+  }
+  .order-bar .summary .total{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:20px;
+  }
+  .order-bar button{
+    background:var(--teal);
+    color:var(--paper);
+    border:none;
+    border-radius:8px;
+    padding:14px 22px;
+    font-family:'Tajawal', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .order-bar button:disabled{
+    background:#5b5648;
+    cursor:not-allowed;
+  }
+  .order-bar button.sending{background:var(--stamp-dark);}
+
+  #toast{
+    position:fixed;
+    top:16px; left:50%;
+    transform:translateX(-50%) translateY(-140%);
+    background:var(--teal-dark);
+    color:var(--paper);
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:13px;
+    z-index:50;
+    transition:transform .25s ease;
+    max-width:90vw;
+    text-align:center;
+  }
+  #toast.show{transform:translateX(-50%) translateY(0);}
+  #toast.error{background:var(--danger);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Order Ticket · تشغيل تلقائي عبر n8n</div>
+  <h1>قائمة الطلب</h1>
+  <p>اختر الأصناف والكمية، ثم أرسل الطلب</p>
+  <div class="webhook-box">
+    <span>رابط n8n:</span>
+    <input id="webhookUrl" type="text" value="https://your-n8n-instance.com/webhook/order" />
+  </div>
+</header>
+
+<nav class="tabs" id="tabs"></nav>
+
+<main id="menu"></main>
+
+<div class="note">
+  <p>
+    كل الأصناف الآن من الشيتات المرفقة (مشروبات، مأكولات، حلويات). صنف واحد فقط في "وجبات" باسمه غير واضح بالصورة
+    وتم وضعه مؤقتًا باسم "وجبة (تأكيد الاسم)" بسعر 130 ج.م — أكّد اسمه وعدّله من المتغيّر
+    <code class="mono">MENU_DATA</code> أعلى ملف الكود. حلويات الوافل والبان كيك 8 أصناف فقط كما في الشيت المرفق.
+  </p>
+</div>
+
+<div class="order-bar">
+  <div class="summary">
+    <div class="count-line" id="countLine">لا توجد أصناف محددة</div>
+    <div class="total mono" id="totalLine">0 ر.س</div>
+  </div>
+  <button id="sendBtn" disabled>إرسال الطلب</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ======================================================================
+   MENU_DATA — عدّل الأسماء والأسعار هنا فقط. كل صنف: {id, name, price}
+   الأسعار بالريال. الأصناف التي تبدأ بـ "مشروب إضافي/وجبة/حلى" أسعارها 0
+   لأنها أماكن محجوزة (placeholders) لاستكمال العدد المطلوب.
+   ====================================================================== */
+const MENU_DATA = {
+  drinks: [
+    {id:'d1',  name:'شاي', price:10, group:'ساخنة'},
+    {id:'d2',  name:'شاي بحليب', price:20, group:'ساخنة'},
+    {id:'d3',  name:'كابتشينو', price:40, group:'ساخنة'},
+    {id:'d4',  name:'قهوة تركي', price:20, group:'ساخنة'},
+    {id:'d5',  name:'قهوه بندق', price:30, group:'ساخنة'},
+    {id:'d6',  name:'قهوة فرنساوي', price:30, group:'ساخنة'},
+    {id:'d7',  name:'نسكافيه', price:30, group:'ساخنة'},
+    {id:'d8',  name:'هوت شوكليت', price:35, group:'ساخنة'},
+    {id:'d9',  name:'اسبرسو سنجل', price:35, group:'ساخنة'},
+    {id:'d10', name:'اسبريسو ميكاتو', price:50, group:'ساخنة'},
+    {id:'d11', name:'لاتيه كلاسيك', price:45, group:'ساخنة'},
+    {id:'d12', name:'فلات وايت', price:45, group:'ساخنة'},
+    {id:'d13', name:'موكا', price:45, group:'ساخنة'},
+    {id:'d14', name:'آيس موكا', price:50, group:'مثلجة'},
+    {id:'d15', name:'آيس لاتيه', price:50, group:'مثلجة'},
+    {id:'d16', name:'فرابتشينو كراميل', price:50, group:'مثلجة'},
+    {id:'d17', name:'ايس كوفى', price:50, group:'مثلجة'},
+    {id:'d18', name:'كانز', price:20, group:'مثلجة'},
+    {id:'d19', name:'مانجو فريش', price:45, group:'عصائر وميلك شيك'},
+    {id:'d20', name:'فراولة فريش', price:40, group:'عصائر وميلك شيك'},
+    {id:'d21', name:'جوافة فريش', price:40, group:'عصائر وميلك شيك'},
+    {id:'d22', name:'برتقال فريش', price:45, group:'عصائر وميلك شيك'},
+    {id:'d23', name:'جوافة حليب', price:45, group:'عصائر وميلك شيك'},
+    {id:'d24', name:'فراولة حليب', price:45, group:'عصائر وميلك شيك'},
+    {id:'d25', name:'ميلك شيك مانجو', price:50, group:'عصائر وميلك شيك'},
+    {id:'d26', name:'ميلك شيك فراولة', price:50, group:'عصائر وميلك شيك'},
+    {id:'d27', name:'ميلك تشك اوريو', price:50, group:'عصائر وميلك شيك'},
+    {id:'d28', name:'ميلك شيك شوكولاتة', price:50, group:'عصائر وميلك شيك'},
+    {id:'d29', name:'عصير جهينه', price:15, group:'عصائر وميلك شيك'},
+    {id:'d30', name:'مياه صغيرة', price:7, group:'عصائر وميلك شيك'},
+  ],
+  food: [
+    {id:'f1',  name:'باكت بطاطس', price:40, group:'بطاطس ومقبلات'},
+    {id:'f2',  name:'بطاطس جبنه', price:50, group:'بطاطس ومقبلات'},
+    {id:'f3',  name:'بطاطس جبنه و قطع الهالبينو', price:60, group:'بطاطس ومقبلات'},
+    {id:'f4',  name:'بطاطس فرنساوي', price:60, group:'بطاطس ومقبلات'},
+    {id:'f5',  name:'هوت دوج', price:90, group:'بطاطس ومقبلات'},
+    {id:'f6',  name:'برجر لحم', price:100, group:'بطاطس ومقبلات'},
+    {id:'f7',  name:'برجر فراخ', price:100, group:'بطاطس ومقبلات'},
+    {id:'f8',  name:'5 قطع ناجتس', price:100, group:'بطاطس ومقبلات'},
+    {id:'f9',  name:'سناك بوكس', price:100, group:'بطاطس ومقبلات'},
+    {id:'f10', name:'حلقات بصل', price:50, group:'بطاطس ومقبلات'},
+    {id:'f11', name:'اصابع موتزاريلا 4', price:60, group:'بطاطس ومقبلات'},
+    {id:'f12', name:'كريب بطاطس', price:60, group:'الكريب المالح'},
+    {id:'f13', name:'كريب خضروات', price:65, group:'الكريب المالح'},
+    {id:'f14', name:'كريب مكس جبن', price:75, group:'الكريب المالح'},
+    {id:'f15', name:'كريب كرسبي', price:100, group:'الكريب المالح'},
+    {id:'f16', name:'كريب زنجر', price:100, group:'الكريب المالح'},
+    {id:'f17', name:'كريب برجر', price:100, group:'الكريب المالح'},
+    {id:'f18', name:'كريب نوتيلا', price:80, group:'الكريب الحلو'},
+    {id:'f19', name:'كريب شيكولاته اوريو', price:80, group:'الكريب الحلو'},
+    {id:'f20', name:'كريب وايت شوكليت', price:80, group:'الكريب الحلو'},
+    {id:'f21', name:'كريب لوتس', price:80, group:'الكريب الحلو'},
+    {id:'f22', name:'وجبة برجر لحم', price:130, group:'وجبات'},
+    {id:'f23', name:'وجبة برجر فراخ', price:130, group:'وجبات'},
+    {id:'f24', name:'وجبة هوت دوج', price:130, group:'وجبات'},
+    {id:'f25', name:'وجبه استربس', price:130, group:'وجبات'},
+    {id:'f26', name:'وجبة ناجتس بوكس', price:130, group:'وجبات'},
+    {id:'f27', name:'وجبة زنجر بوكس', price:145, group:'وجبات'},
+  ],
+  dessert: [
+    {id:'s1', name:'وافل شيكولاته', price:40, group:'وافل وبان كيك'},
+    {id:'s2', name:'وافل كاراميل', price:40, group:'وافل وبان كيك'},
+    {id:'s3', name:'وافل لوتس', price:40, group:'وافل وبان كيك'},
+    {id:'s4', name:'وافل وايت شوكليت', price:40, group:'وافل وبان كيك'},
+    {id:'s5', name:'بان كيك شيكولاته', price:40, group:'وافل وبان كيك'},
+    {id:'s6', name:'بان كيك كاراميل', price:40, group:'وافل وبان كيك'},
+    {id:'s7', name:'بان كيك لوتس', price:40, group:'وافل وبان كيك'},
+    {id:'s8', name:'بان كيك وايت شوكليت', price:40, group:'وافل وبان كيك'},
+  ],
+};
+const CURRENCY = 'ج.م';
+
+const CATS = [
+  {key:'drinks',  label:'مشروبات'},
+  {key:'food',    label:'مأكولات'},
+  {key:'dessert', label:'حلويات'},
+];
+
+let activeCat = 'drinks';
+const cart = {}; // id -> qty (number)
+
+function renderTabs(){
+  const nav = document.getElementById('tabs');
+  nav.innerHTML = '';
+  CATS.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className = c.key === activeCat ? 'active' : '';
+    btn.innerHTML = c.label + '<span class="count">' + MENU_DATA[c.key].length + ' صنف</span>';
+    btn.onclick = ()=>{ activeCat = c.key; renderTabs(); renderMenu(); };
+    nav.appendChild(btn);
+  });
+}
+
+function qtyButtonsHtml(item){
+  const current = cart[item.id] || 0;
+  const presets = [1,2,3];
+  let html = '<div class="qty" data-id="'+item.id+'">';
+  presets.forEach(n=>{
+    const sel = current === n ? 'selected' : '';
+    html += '<button class="'+sel+'" data-preset="'+n+'" type="button">'+n+'</button>';
+  });
+  const isOther = current > 0 && !presets.includes(current);
+  html += '<button class="other-toggle '+(isOther?'selected':'')+'" data-preset="other" type="button">آخر</button>';
+  html += '<input class="other-input '+(isOther?'show':'')+'" type="number" min="1" inputmode="numeric" value="'+(isOther?current:'')+'" placeholder="#" />';
+  html += '</div>';
+  return html;
+}
+
+function renderMenu(){
+  const main = document.getElementById('menu');
+  const items = MENU_DATA[activeCat];
+  const catLabel = CATS.find(c=>c.key===activeCat).label;
+  let html = '<div class="cat-heading">'+catLabel+' · '+items.length+' صنف</div>';
+
+  let lastGroup = null;
+  let ticketOpen = false;
+  items.forEach(item=>{
+    if(item.group !== lastGroup){
+      if(ticketOpen) html += '</div>';
+      html += '<div class="group-label">'+(item.group || '')+'</div><div class="ticket">';
+      ticketOpen = true;
+      lastGroup = item.group;
+    }
+    html += '<div class="item">';
+    html += '  <div class="item-main">';
+    html += '    <div class="item-name '+(item.placeholder?'placeholder':'')+'">'+item.name+'</div>';
+    html += '    <div class="item-price mono">'+item.price+' '+CURRENCY+'</div>';
+    html += '  </div>';
+    html += qtyButtonsHtml(item);
+    html += '</div>';
+  });
+  if(ticketOpen) html += '</div>';
+  main.innerHTML = html;
+  bindQtyHandlers();
+}
+
+function findItem(id){
+  for(const key in MENU_DATA){
+    const found = MENU_DATA[key].find(i=>i.id===id);
+    if(found) return found;
+  }
+  return null;
+}
+
+function setQty(id, qty){
+  if(qty > 0) cart[id] = qty;
+  else delete cart[id];
+  updateOrderBar();
+}
+
+function bindQtyHandlers(){
+  document.querySelectorAll('.qty').forEach(box=>{
+    const id = box.dataset.id;
+    const otherInput = box.querySelector('.other-input');
+    box.querySelectorAll('button[data-preset]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const alreadySelected = btn.classList.contains('selected');
+
+        // Clicking the same (already-selected) option again cancels it.
+        if(alreadySelected){
+          box.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
+          otherInput.classList.remove('show');
+          otherInput.value = '';
+          setQty(id, 0);
+          return;
+        }
+
+        if(btn.dataset.preset === 'other'){
+          otherInput.classList.add('show');
+          otherInput.focus();
+          box.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
+          btn.classList.add('selected');
+        } else {
+          otherInput.classList.remove('show');
+          otherInput.value = '';
+          box.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
+          btn.classList.add('selected');
+          setQty(id, parseInt(btn.dataset.preset, 10));
+        }
+      });
+    });
+    otherInput.addEventListener('input', ()=>{
+      const v = parseInt(otherInput.value, 10);
+      setQty(id, Number.isFinite(v) && v > 0 ? v : 0);
+    });
+  });
+}
+
+function updateOrderBar(){
+  const ids = Object.keys(cart).filter(id => cart[id] > 0);
+  const countLine = document.getElementById('countLine');
+  const totalLine = document.getElementById('totalLine');
+  const sendBtn = document.getElementById('sendBtn');
+
+  if(ids.length === 0){
+    countLine.textContent = 'لا توجد أصناف محددة';
+    totalLine.textContent = '0 ' + CURRENCY;
+    sendBtn.disabled = true;
+    return;
+  }
+  let totalQty = 0, totalPrice = 0;
+  ids.forEach(id=>{
+    const item = findItem(id);
+    totalQty += cart[id];
+    totalPrice += cart[id] * (item ? item.price : 0);
+  });
+  countLine.textContent = ids.length + ' صنف · ' + totalQty + ' قطعة';
+  totalLine.textContent = totalPrice + ' ' + CURRENCY;
+  sendBtn.disabled = false;
+}
+
+function showToast(msg, isError){
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = isError ? 'show error' : 'show';
+  setTimeout(()=> toast.classList.remove('show'), 3500);
+}
+
+async function submitOrder(){
+  const url = document.getElementById('webhookUrl').value.trim();
+  if(!url){ showToast('أدخل رابط n8n أولاً', true); return; }
+
+  const ids = Object.keys(cart).filter(id => cart[id] > 0);
+  if(ids.length === 0) return;
+
+  const orderItems = ids.map(id=>{
+    const item = findItem(id);
+    return {
+      id: item.id,
+      name: item.name,
+      unit_price: item.price,
+      quantity: cart[id],
+      line_total: item.price * cart[id],
+    };
+  });
+  const total = orderItems.reduce((sum,i)=> sum + i.line_total, 0);
+
+  const payload = {
+    source: 'web-order-form',
+    submitted_at: new Date().toISOString(),
+    currency: 'EGP',
+    items: orderItems,
+    total_price: total,
+  };
+
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.disabled = true;
+  sendBtn.classList.add('sending');
+  sendBtn.textContent = 'جارٍ الإرسال...';
+
+  try{
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    showToast('تم إرسال الطلب بنجاح ✓', false);
+    Object.keys(cart).forEach(k => delete cart[k]);
+    renderMenu();
+    updateOrderBar();
+  } catch(err){
+    showToast('تعذّر إرسال الطلب: ' + err.message, true);
+  } finally {
+    sendBtn.classList.remove('sending');
+    sendBtn.textContent = 'إرسال الطلب';
+    sendBtn.disabled = Object.keys(cart).filter(id=>cart[id]>0).length === 0;
+  }
+}
+
+document.getElementById('sendBtn').addEventListener('click', submitOrder);
+
+renderTabs();
+renderMenu();
+updateOrderBar();
+</script>
+</body>
+</html>
