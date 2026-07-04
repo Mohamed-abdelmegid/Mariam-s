@@ -56,36 +56,6 @@
     font-size:14px;
   }
 
-  .webhook-box{
-    max-width:520px;
-    margin:16px auto 0;
-    display:flex;
-    gap:8px;
-    background:rgba(244,239,226,0.06);
-    border:1px solid rgba(244,239,226,0.18);
-    border-radius:var(--radius);
-    padding:8px;
-  }
-  .webhook-box input{
-    flex:1;
-    background:transparent;
-    border:none;
-    color:var(--paper);
-    font-family:'JetBrains Mono', monospace;
-    font-size:12px;
-    padding:6px 8px;
-    outline:none;
-    direction:ltr;
-    text-align:left;
-  }
-  .webhook-box span{
-    font-size:11px;
-    color:var(--muted);
-    align-self:center;
-    padding-right:6px;
-    white-space:nowrap;
-  }
-
   nav.tabs{
     display:flex;
     justify-content:center;
@@ -299,26 +269,14 @@
 <body>
 
 <header>
-  <div class="eyebrow">Order Ticket · تشغيل تلقائي عبر n8n</div>
-  <h1>قائمة الطلب</h1>
+  <h1>Mariam's Bites</h1>
   <p>اختر الأصناف والكمية، ثم أرسل الطلب</p>
-  <div class="webhook-box">
-    <span>رابط n8n:</span>
-    <input id="webhookUrl" type="text" value="https://your-n8n-instance.com/webhook/order" />
-  </div>
 </header>
 
 <nav class="tabs" id="tabs"></nav>
 
 <main id="menu"></main>
 
-<div class="note">
-  <p>
-    كل الأصناف الآن من الشيتات المرفقة (مشروبات، مأكولات، حلويات). صنف واحد فقط في "وجبات" باسمه غير واضح بالصورة
-    وتم وضعه مؤقتًا باسم "وجبة (تأكيد الاسم)" بسعر 130 ج.م — أكّد اسمه وعدّله من المتغيّر
-    <code class="mono">MENU_DATA</code> أعلى ملف الكود. حلويات الوافل والبان كيك 8 أصناف فقط كما في الشيت المرفق.
-  </p>
-</div>
 
 <div class="order-bar">
   <div class="summary">
@@ -410,6 +368,9 @@ const MENU_DATA = {
   ],
 };
 const CURRENCY = 'ج.م';
+
+/* ضع رابط الـ webhook الخاص بـ n8n هنا (مرة واحدة فقط) */
+const WEBHOOK_URL = 'https://skyrocket-award-brook.ngrok-free.dev/webhook-test/9420b78c-4208-4de4-a070-d97c7b8abea6';
 
 const CATS = [
   {key:'drinks',  label:'مشروبات'},
@@ -558,8 +519,8 @@ function showToast(msg, isError){
 }
 
 async function submitOrder(){
-  const url = document.getElementById('webhookUrl').value.trim();
-  if(!url){ showToast('أدخل رابط n8n أولاً', true); return; }
+  const url = WEBHOOK_URL.trim();
+  if(!url || url.includes('your-n8n-instance')){ showToast('لم يتم ضبط رابط n8n في الكود بعد', true); return; }
 
   const ids = Object.keys(cart).filter(id => cart[id] > 0);
   if(ids.length === 0) return;
