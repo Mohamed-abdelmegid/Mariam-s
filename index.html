@@ -281,7 +281,7 @@
 <div class="order-bar">
   <div class="summary">
     <div class="count-line" id="countLine">لا توجد أصناف محددة</div>
-    <div class="total mono" id="totalLine">0 ر.س</div>
+    <div class="total mono" id="totalLine">0 ج.م</div>
   </div>
   <button id="sendBtn" disabled>إرسال الطلب</button>
 </div>
@@ -369,11 +369,12 @@ const MENU_DATA = {
 };
 const CURRENCY = 'ج.م';
 
-/* ضع رابط الـ webhook الخاص بـ n8n هنا (مرة واحدة فقط) */
-const WEBHOOK_URL = 'https://skyrocket-award-brook.ngrok-free.dev/webhook/9420b78c-4208-4de4-a070-d97c7b8abea6';
+/* رابط الـ Google Apps Script Web App (Webhook) — تم ضبطه بالفعل */
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwtat9ojIYsTYgD6D6aU7K1WZqE7yR8W7pYRQhefg10hf-Xg3Xju3uKmore-nGx9_DQlg/exec';
 
-/* مفتاح سري بسيط يُرسل مع كل طلب — يجب أن يطابق القيمة التي تضعها
-   في عقدة الـ Webhook بـ n8n (Header Auth). غيّره لأي نص تريده. */
+/* مفتاح سري بسيط يُرسل داخل الـ JSON payload نفسه (وليس كـ Header)
+   لأن طلبات Google Apps Script لا تدعم الـ CORS preflight الخاص بالـ headers المخصصة.
+   يجب أن يطابق نفس القيمة الموجودة داخل كود Apps Script (doPost). غيّره لأي نص تريده. */
 const SHARED_SECRET = 'mMkAa3IBZGHMRe_wy5fir2honHnFjqPF7qWHuLzdRWs';
 
 const CATS = [
@@ -524,7 +525,7 @@ function showToast(msg, isError){
 
 async function submitOrder(){
   const url = WEBHOOK_URL.trim();
-  if(!url || url.includes('your-n8n-instance')){ showToast('لم يتم ضبط رابط n8n في الكود بعد', true); return; }
+  if(!url){ showToast('لم يتم ضبط رابط الـ Webhook في الكود بعد', true); return; }
 
   const ids = Object.keys(cart).filter(id => cart[id] > 0);
   if(ids.length === 0) return;
@@ -547,6 +548,7 @@ async function submitOrder(){
     currency: 'EGP',
     items: orderItems,
     total_price: total,
+    secret: SHARED_SECRET,
   };
 
   const sendBtn = document.getElementById('sendBtn');
@@ -558,8 +560,7 @@ async function submitOrder(){
     const res = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-Shared-Secret': SHARED_SECRET,
+        'Content-Type': 'text/plain;charset=utf-8',
       },
       body: JSON.stringify(payload),
     });
